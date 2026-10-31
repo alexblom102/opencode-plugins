@@ -1,0 +1,14 @@
+node_modules/
+*.tgz
+*.bak
+*.tmp
+.env
+.env.*
+opencode.json
+opencode.jsonc
+tui.json
+tui.jsonc
+pricing-cache.json
+exports/
+cache/
+state/

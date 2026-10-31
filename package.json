@@ -1,0 +1,19 @@
+{
+  "name": "opencode-plugins",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "Portable cache countdown, session usage and message timestamp plugins for OpenCode",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexblom102/opencode-plugins.git"
+  },
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "install:plugins": "node install.mjs",
+    "test": "node --test test/*.test.mjs plugins/*/test/*.test.js",
+    "check": "node scripts/check.mjs"
+  },
+  "devDependencies": { "@opencode-ai/sdk": "1.18.29" }
+}

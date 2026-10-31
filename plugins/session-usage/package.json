@@ -1,0 +1,10 @@
+{
+  "name": "opencode-session-usage",
+  "version": "1.4.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}
