@@ -13,6 +13,12 @@ export const plugins = {
   "session-usage": { scope: "tui", entry: "tui.js", files: ["tui.js", "usage.js", "performance.js", "pricing.js", "tracker.js"] },
   "tool-stopwatch": { scope: "tui", entry: "tui.js", files: ["tui.js", "stopwatch.js"] },
   "message-timestamps": { scope: "server", entry: "server.js", files: ["server.js", "timestamps.js"], dependencies: true },
+  "discord-notify": { scope: "server", entry: "server.js", entries: { server: "server.js", tui: "tui.js" },
+    legacyAutoEntry: "plugins/discord-notify.js", files: ["server.js", "tui.js", "notifier.mjs", "settings.mjs", "config.example.json"] },
+}
+
+function entries(plugin) {
+  return Object.entries(plugin.entries ?? { [plugin.scope]: plugin.entry })
 }
 
 async function exists(file) {
@@ -51,7 +57,7 @@ export async function installDependencies(directory) {
 export async function installCollection({ names = Object.keys(plugins), dependencyInstaller = installDependencies, ...options } = {}) {
   names = [...new Set(names)]
   if (!names.length || names.some((name) => !Object.hasOwn(plugins, name))) throw new Error(`Choose plugins from: ${Object.keys(plugins).join(", ")}`)
-  const scopes = [...new Set(names.map((name) => plugins[name].scope))]
+  const scopes = [...new Set(names.flatMap((name) => entries(plugins[name]).map(([scope]) => scope)))]
   const paths = await configPaths({ ...options, scopes })
   if (scopes.length > 1 && paths.tui === paths.server) throw new Error("TUI and server plugins need separate configuration files")
   const plans = {}
@@ -63,14 +69,26 @@ export async function installCollection({ names = Object.keys(plugins), dependen
   const payloads = []
   for (const name of names) {
     const plugin = plugins[name]
-    const plan = plans[plugin.scope]
-    plan.contents = editConfig(plan.contents, {
-      configFile: plan.file, pluginSpec: `./${name}/${plugin.entry}`,
-      sourceFile: path.join(source, "plugins", name, plugin.entry),
-      schemaURL: `https://opencode.ai/${plugin.scope === "tui" ? "tui" : "config"}.json`,
-    })
+    const primary = path.dirname(plans[plugin.scope].file)
+    const directory = path.join(primary, name)
+    const legacy = plugin.legacyAutoEntry
+      ? await readFile(path.join(primary, plugin.legacyAutoEntry), "utf8").catch((error) => { if (error.code === "ENOENT") return ""; throw error })
+      : ""
+    const legacyLoader = legacy.includes('from "../discord-notify/notifier.mjs"') && legacy.includes("function DiscordNotify(")
+    for (const [scope, entry] of entries(plugin)) {
+      if (scope === "server" && legacyLoader) continue
+      const plan = plans[scope]
+      const target = path.join(directory, entry)
+      const relative = path.relative(path.dirname(plan.file), target)
+      const pluginSpec = path.isAbsolute(relative) ? pathToFileURL(target).href : "./" + relative.split(path.sep).join("/")
+      plan.contents = editConfig(plan.contents, {
+        configFile: plan.file, pluginSpec,
+        sourceFile: path.join(source, "plugins", name, entry),
+        schemaURL: `https://opencode.ai/${scope === "tui" ? "tui" : "config"}.json`,
+      })
+    }
     const files = await Promise.all([...plugin.files, "package.json"].map(async (file) => [file, await readFile(path.join(source, "plugins", name, file))]))
-    payloads.push({ name, plugin, directory: path.join(path.dirname(plan.file), name), files })
+    payloads.push({ name, plugin, directory, files })
   }
   for (const payload of payloads) {
     await mkdir(payload.directory, { recursive: true })
@@ -80,6 +98,7 @@ export async function installCollection({ names = Object.keys(plugins), dependen
   const backups = []
   for (const plan of Object.values(plans)) {
     if (plan.contents === plan.original) continue
+    await mkdir(path.dirname(plan.file), { recursive: true })
     if (plan.original !== undefined) {
       const backup = `${plan.file}.before-plugins-${Date.now()}-${randomUUID().slice(0, 8)}.bak`
       await writeFile(backup, plan.original, { flag: "wx", mode: 0o600 })
@@ -95,13 +114,14 @@ if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === imp
     const { values, positionals } = parseArgs({ allowPositionals: true, options: {
       "config-dir": { type: "string" }, "tui-config": { type: "string" }, "server-config": { type: "string" }, help: { type: "boolean", short: "h" },
     } })
-    if (values.help) console.log(`Usage: node install.mjs [${Object.keys(plugins).join(" | ")}] [--config-dir <directory>] [--tui-config <file>] [--server-config <file>]\n\nWith no plugin names, installs all four. Run again after git pull to update.`)
+    if (values.help) console.log(`Usage: node install.mjs [${Object.keys(plugins).join(" | ")}] [--config-dir <directory>] [--tui-config <file>] [--server-config <file>]\n\nWith no plugin names, installs all ${Object.keys(plugins).length} plugins. Run again after git pull to update.`)
     else {
       const result = await installCollection({ names: positionals.length ? positionals : undefined,
         configDir: values["config-dir"], tuiConfig: values["tui-config"], serverConfig: values["server-config"] })
       for (const plugin of result.plugins) console.log(`Installed ${plugin.name}: ${plugin.directory}`)
       for (const backup of result.backups) console.log(`Previous configuration saved: ${backup}`)
-      console.log("Quit and restart OpenCode. If you installed message-timestamps, restart any separately running OpenCode server too.")
+      console.log("Quit and restart OpenCode and any separately running server.")
+      if (result.plugins.some((plugin) => plugin.name === "discord-notify")) console.log("Discord: set OPENCODE_DISCORD_WEBHOOK_URL before launch, or create discord-notify/config.json from config.example.json. Use /notify for settings.")
     }
   } catch (error) { console.error(`Installation failed: ${error.message}`); process.exitCode = 1 }
 }

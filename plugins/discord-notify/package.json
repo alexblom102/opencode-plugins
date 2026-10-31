@@ -1,0 +1,9 @@
+{
+  "name": "opencode-discord-notify",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "Compact Discord alerts and native notification controls for OpenCode",
+  "scripts": { "test": "node --test test/*.test.js" }
+}

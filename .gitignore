@@ -12,3 +12,4 @@ pricing-cache.json
 exports/
 cache/
 state/
+plugins/discord-notify/config.json

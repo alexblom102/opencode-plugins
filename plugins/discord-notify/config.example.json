@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "webhookUrl": "",
+  "readyMinMinutes": 5,
+  "longToolMinutes": 20,
+  "heartbeatSeconds": 60,
+  "progressIntervalSeconds": 15,
+  "includeSubagents": false,
+  "events": {
+    "ready": true,
+    "input": true,
+    "error": true,
+    "stopped": true,
+    "longTool": true,
+    "started": false,
+    "progress": false
+  }
+}

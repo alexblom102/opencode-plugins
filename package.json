@@ -1,10 +1,10 @@
 {
   "name": "opencode-plugins",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "license": "MIT",
-  "description": "All-in-one OpenCode tool stopwatch, cache countdown, session usage and message timestamp plugins",
+  "description": "OpenCode tool timers, cache countdown, session usage, timestamps and Discord notifications",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/alexblom102/opencode-plugins.git"

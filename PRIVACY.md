@@ -2,13 +2,13 @@
 
 ## Published contents
 
-Only the explicitly selected plugin `.js` modules and their reviewed synthetic
+Only the explicitly selected plugin JavaScript modules and their reviewed synthetic
 tests were transferred into this repository. Documentation and package metadata
 were prepared for public distribution. The original local README and validation
 reports were not copied: they contained machine-specific paths and local usage
 observations.
 
-No personal configuration, authentication files, API keys, provider-account
+No personal configuration, authentication files, webhook credentials, API keys, provider-account
 settings, conversation databases, session ledgers, usage exports, pricing
 caches, screenshots, logs or local backups are included. `source-manifest.json`
 lists the selected logical source paths and their SHA-256 hashes, without
@@ -35,7 +35,13 @@ retained. The tests' message/session IDs and token counters are synthetic.
   OpenCode server. They remain in saved history and exports, and are removed
   from the history passed to the model. They use the server machine's local
   timezone. No third-party service is involved.
+- **Discord notifications:** sends the project name, session title and elapsed
+  time to the user's configured Discord webhook. Input alerts include a short
+  question or permission type; tool alerts include a tool name and running time.
+  Task lists, tool output and full error messages are not included. Settings are
+  stored locally; the installer never replaces `discord-notify/config.json`.
+  The webhook can instead be supplied through `OPENCODE_DISCORD_WEBHOOK_URL`.
 
-Installing these plugins does not publish existing or future usage data. Do not
-add generated state or export files to a source checkout; those paths are also
-excluded by `.gitignore`.
+Only the optional, explicitly configured Discord notifier sends notification
+content to a third party. Generated state, webhook settings and exports are
+excluded by `.gitignore` and rejected by the publication checks.

@@ -7,24 +7,48 @@
       "sha256": "f389b0a7500e569b10df7609cc5c77565b25703717c3a4faf96cd4b75288a5b1"
     },
     {
+      "path": "plugins/cache-countdown/test/cache.test.js",
+      "sha256": "57eb3d1bdbd2e2e5367a35034cb5148819ab2804bf073645ce396c508375dcfe"
+    },
+    {
       "path": "plugins/cache-countdown/tui.js",
       "sha256": "5445a3296f49b2e558e1567e903a6f78a8a418de34c1bf8c9fb48e8bddabf996"
     },
     {
-      "path": "plugins/cache-countdown/test/cache.test.js",
-      "sha256": "57eb3d1bdbd2e2e5367a35034cb5148819ab2804bf073645ce396c508375dcfe"
+      "path": "plugins/discord-notify/config.example.json",
+      "sha256": "9ec1754c8b52b28bda6681760b2c79eed9aa15a131db5770af0cdfd14d9b6c4e"
+    },
+    {
+      "path": "plugins/discord-notify/notifier.mjs",
+      "sha256": "d9c74bd021be7537c59bd977f311e233b814d1e6259a8271417a2e68a7e3157a"
+    },
+    {
+      "path": "plugins/discord-notify/server.js",
+      "sha256": "6095db6a7dbc861e62ee492f6f6c06bb99d5fe52591ce659b5b52f7f1a707037"
+    },
+    {
+      "path": "plugins/discord-notify/settings.mjs",
+      "sha256": "b5dba3603dcc5bb2b661e8afa45e2fc966f1f7563696bbc46976d224cf3b0d21"
+    },
+    {
+      "path": "plugins/discord-notify/test/notifier.test.js",
+      "sha256": "083a8596c83d4050deb7d0cd34780c3698acece9ae28dacb9375c6614545e5e0"
+    },
+    {
+      "path": "plugins/discord-notify/tui.js",
+      "sha256": "9b4820cf4d58a0f7f420de1e15e1bcdd4d868f89a1298f84cf337c2f68baac48"
     },
     {
       "path": "plugins/message-timestamps/server.js",
       "sha256": "67db4502a1d3eb3a06ec81b88819ec076c1ea02c71f5715fe7d1fd94bda94bd7"
     },
     {
-      "path": "plugins/message-timestamps/timestamps.js",
-      "sha256": "b2cd852cd6bb37934a996622cfe1836ce5f22828297a5222d8e19eb6ef31a475"
-    },
-    {
       "path": "plugins/message-timestamps/test/plugin.test.js",
       "sha256": "61348ab174936b74804f3873338370f6d61ab251be79e8e3eee4c2a1da22a5b7"
+    },
+    {
+      "path": "plugins/message-timestamps/timestamps.js",
+      "sha256": "b2cd852cd6bb37934a996622cfe1836ce5f22828297a5222d8e19eb6ef31a475"
     },
     {
       "path": "plugins/session-usage/performance.js",
@@ -33,18 +57,6 @@
     {
       "path": "plugins/session-usage/pricing.js",
       "sha256": "0fbeff30e850dedf83f605915f37431afd9161e7bf645eeeca5ef017501b683b"
-    },
-    {
-      "path": "plugins/session-usage/tracker.js",
-      "sha256": "a81fbc5a176af2faed05df1f7fa989d45ec10116855f5900f541fe414d0a30ba"
-    },
-    {
-      "path": "plugins/session-usage/usage.js",
-      "sha256": "ffe3b78dc55d73e13cee9abae3f3c53e270ef0f2e35671bfed8285c529fcaed9"
-    },
-    {
-      "path": "plugins/session-usage/tui.js",
-      "sha256": "b5e2ab03491a54a2d6834ed3e8b746d2139c670575141dd89d5855fda5327c98"
     },
     {
       "path": "plugins/session-usage/test/answer-timing.test.js",
@@ -75,16 +87,28 @@
       "sha256": "f1f1cb3f813af213fe725f6b84ac419f9d6d8b850795fe882f84983c8dea0629"
     },
     {
+      "path": "plugins/session-usage/tracker.js",
+      "sha256": "a81fbc5a176af2faed05df1f7fa989d45ec10116855f5900f541fe414d0a30ba"
+    },
+    {
+      "path": "plugins/session-usage/tui.js",
+      "sha256": "b5e2ab03491a54a2d6834ed3e8b746d2139c670575141dd89d5855fda5327c98"
+    },
+    {
+      "path": "plugins/session-usage/usage.js",
+      "sha256": "ffe3b78dc55d73e13cee9abae3f3c53e270ef0f2e35671bfed8285c529fcaed9"
+    },
+    {
       "path": "plugins/tool-stopwatch/stopwatch.js",
       "sha256": "ccd759198289342eb8d54ad7f1871213b1f62c7dfdf0e0878707c14ad431fd4f"
     },
     {
-      "path": "plugins/tool-stopwatch/tui.js",
-      "sha256": "5690a43e9903ca2c3f4b0edef74f4e44df8fb79309c40c1350e813859c1cd424"
-    },
-    {
       "path": "plugins/tool-stopwatch/test/stopwatch.test.js",
       "sha256": "85dcab254c2bed23dbb5e713efa695c56bd02d3fb4ea11cb2be67d659fa61139"
+    },
+    {
+      "path": "plugins/tool-stopwatch/tui.js",
+      "sha256": "5690a43e9903ca2c3f4b0edef74f4e44df8fb79309c40c1350e813859c1cd424"
     }
   ]
 }

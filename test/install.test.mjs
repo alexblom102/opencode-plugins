@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import { test } from "node:test"
@@ -16,11 +16,11 @@ test("the full installer separates TUI/server entries and isolates the SDK depen
   const configDir = await temporary(t)
   const dependencies = []
   const result = await installCollection({ configDir, dependencyInstaller: async (directory) => dependencies.push(directory) })
-  assert.equal(result.plugins.length, 4)
-  assert.deepEqual(JSON.parse(await readFile(path.join(configDir, "tui.json"), "utf8")).plugin, ["./cache-countdown/tui.js", "./session-usage/tui.js", "./tool-stopwatch/tui.js"])
+  assert.equal(result.plugins.length, 5)
+  assert.deepEqual(JSON.parse(await readFile(path.join(configDir, "tui.json"), "utf8")).plugin, ["./cache-countdown/tui.js", "./session-usage/tui.js", "./tool-stopwatch/tui.js", "./discord-notify/tui.js"])
   const server = JSON.parse(await readFile(path.join(configDir, "opencode.json"), "utf8"))
   assert.equal(server.$schema, "https://opencode.ai/config.json")
-  assert.deepEqual(server.plugin, ["./message-timestamps/server.js"])
+  assert.deepEqual(server.plugin, ["./message-timestamps/server.js", "./discord-notify/server.js"])
   assert.deepEqual(dependencies, [path.join(configDir, "message-timestamps")])
   assert.equal(JSON.parse(await readFile(path.join(dependencies[0], "package.json"), "utf8")).dependencies["@opencode-ai/sdk"], "1.18.29")
 })
@@ -88,8 +88,55 @@ test("upgrading the collection keeps an absolute standalone entry without duplic
   await writeFile(file, JSON.stringify({ plugin: ["./cache-countdown/tui.js", "./session-usage/tui.js", existing] }))
   await installCollection({ configDir, dependencyInstaller: async () => {} })
   const contents = JSON.parse(await readFile(file, "utf8"))
-  assert.equal(contents.plugin.length, 3)
+  assert.equal(contents.plugin.length, 4)
   assert.deepEqual(contents.plugin[2], existing)
   await installCollection({ configDir, dependencyInstaller: async () => {} })
   assert.deepEqual(JSON.parse(await readFile(file, "utf8")), contents)
+})
+
+test("Discord installs both entry points and preserves private settings on reinstall", async (t) => {
+  const configDir = await temporary(t)
+  const directory = path.join(configDir, "discord-notify")
+  await mkdir(directory)
+  const privateSettings = '{"webhookUrl":"local-only-fixture","events":{"ready":false}}'
+  await writeFile(path.join(directory, "config.json"), privateSettings)
+  const options = { configDir, names: ["discord-notify"], dependencyInstaller: () => { throw new Error("unexpected npm") } }
+  await installCollection(options)
+  assert.deepEqual(JSON.parse(await readFile(path.join(configDir, "tui.json"), "utf8")).plugin, ["./discord-notify/tui.js"])
+  assert.deepEqual(JSON.parse(await readFile(path.join(configDir, "opencode.json"), "utf8")).plugin, ["./discord-notify/server.js"])
+  assert.equal(JSON.parse(await readFile(path.join(directory, "config.example.json"), "utf8")).webhookUrl, "")
+  assert.equal(await readFile(path.join(directory, "config.json"), "utf8"), privateSettings)
+  const again = await installCollection(options)
+  assert.equal(again.backups.length, 0)
+  assert.equal(await readFile(path.join(directory, "config.json"), "utf8"), privateSettings)
+})
+
+test("Discord server and TUI share settings when configuration files are in different directories", async (t) => {
+  const directory = await temporary(t)
+  const serverConfig = path.join(directory, "server", "opencode.json")
+  const tuiConfig = path.join(directory, "client", "tui.json")
+  await installCollection({ names: ["discord-notify"], serverConfig, tuiConfig })
+  const server = JSON.parse(await readFile(serverConfig, "utf8"))
+  const tui = JSON.parse(await readFile(tuiConfig, "utf8"))
+  const target = path.join(path.dirname(serverConfig), "discord-notify")
+  assert.equal(new URL(server.plugin[0], pathToFileURL(serverConfig)).href, pathToFileURL(path.join(target, "server.js")).href)
+  assert.equal(new URL(tui.plugin[0], pathToFileURL(tuiConfig)).href, pathToFileURL(path.join(target, "tui.js")).href)
+  assert.ok((await readFile(path.join(target, "settings.mjs"), "utf8")).includes('new URL("./config.json", import.meta.url)'))
+})
+
+test("upgrading a legacy Discord auto-loader does not add a duplicate server registration", async (t) => {
+  const configDir = await temporary(t)
+  await mkdir(path.join(configDir, "plugins"))
+  const autoLoader = path.join(configDir, "plugins", "discord-notify.js")
+  const loader = 'import { createNotifier } from "../discord-notify/notifier.mjs"\nexport default async function DiscordNotify(context) { return createNotifier(context, { enabled: false }).hooks }\n'
+  await writeFile(autoLoader, loader)
+  const serverConfig = path.join(configDir, "opencode.json")
+  const original = '{"plugin":["existing"]}\n'
+  await writeFile(serverConfig, original)
+  await installCollection({ configDir, names: ["discord-notify"] })
+  assert.equal(await readFile(autoLoader, "utf8"), loader)
+  assert.equal(await readFile(serverConfig, "utf8"), original)
+  const again = await installCollection({ configDir, names: ["discord-notify"] })
+  assert.equal(again.backups.length, 0)
+  assert.deepEqual(JSON.parse(await readFile(path.join(configDir, "tui.json"), "utf8")).plugin, ["./discord-notify/tui.js"])
 })
