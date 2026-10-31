@@ -73,6 +73,18 @@
     {
       "path": "plugins/session-usage/test/usage.test.js",
       "sha256": "f1f1cb3f813af213fe725f6b84ac419f9d6d8b850795fe882f84983c8dea0629"
+    },
+    {
+      "path": "plugins/tool-stopwatch/stopwatch.js",
+      "sha256": "ccd759198289342eb8d54ad7f1871213b1f62c7dfdf0e0878707c14ad431fd4f"
+    },
+    {
+      "path": "plugins/tool-stopwatch/tui.js",
+      "sha256": "5690a43e9903ca2c3f4b0edef74f4e44df8fb79309c40c1350e813859c1cd424"
+    },
+    {
+      "path": "plugins/tool-stopwatch/test/stopwatch.test.js",
+      "sha256": "85dcab254c2bed23dbb5e713efa695c56bd02d3fb4ea11cb2be67d659fa61139"
     }
   ]
 }

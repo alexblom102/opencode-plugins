@@ -11,6 +11,7 @@ const source = path.dirname(fileURLToPath(import.meta.url))
 export const plugins = {
   "cache-countdown": { scope: "tui", entry: "tui.js", files: ["tui.js", "cache.js"] },
   "session-usage": { scope: "tui", entry: "tui.js", files: ["tui.js", "usage.js", "performance.js", "pricing.js", "tracker.js"] },
+  "tool-stopwatch": { scope: "tui", entry: "tui.js", files: ["tui.js", "stopwatch.js"] },
   "message-timestamps": { scope: "server", entry: "server.js", files: ["server.js", "timestamps.js"], dependencies: true },
 }
 
@@ -94,7 +95,7 @@ if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === imp
     const { values, positionals } = parseArgs({ allowPositionals: true, options: {
       "config-dir": { type: "string" }, "tui-config": { type: "string" }, "server-config": { type: "string" }, help: { type: "boolean", short: "h" },
     } })
-    if (values.help) console.log(`Usage: node install.mjs [${Object.keys(plugins).join(" | ")}] [--config-dir <directory>] [--tui-config <file>] [--server-config <file>]\n\nWith no plugin names, installs all three. Run again after git pull to update.`)
+    if (values.help) console.log(`Usage: node install.mjs [${Object.keys(plugins).join(" | ")}] [--config-dir <directory>] [--tui-config <file>] [--server-config <file>]\n\nWith no plugin names, installs all four. Run again after git pull to update.`)
     else {
       const result = await installCollection({ names: positionals.length ? positionals : undefined,
         configDir: values["config-dir"], tuiConfig: values["tui-config"], serverConfig: values["server-config"] })

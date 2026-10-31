@@ -20,6 +20,9 @@ retained. The tests' message/session IDs and token counters are synthetic.
 
 ## Runtime behavior
 
+- **Tool stopwatch:** reads the current session's tool timing/display metadata
+  and saves its panel-visibility preference locally. It does not upload tool
+  information or save tool output.
 - **Cache countdown:** reads the current session's usage metadata and displays
   an estimated cache lifetime. It does not upload session information.
 - **Session usage:** reads session metadata and token counters from the

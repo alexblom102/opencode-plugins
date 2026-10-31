@@ -1,15 +1,14 @@
 # OpenCode Plugins
 
-Three portable plugins for OpenCode, verified on **OpenCode 1.19.0**.
+All four plugins in one repository, with one installer and one update command.
+Verified on **OpenCode 1.19.0**.
 
 | Plugin | What it adds | Commands |
 | --- | --- | --- |
+| [Tool stopwatch](plugins/tool-stopwatch/README.md) | An independent live timer for every running tool call | `/tool-timers` |
 | [Cache countdown](plugins/cache-countdown/README.md) | An estimated prompt-cache lifetime beside the prompt | `/cache` |
 | [Session usage](plugins/session-usage/README.md) | Token totals, tool-free tokens/sec, answer TTFT, API-equivalent costs and session statistics | `/usage`, `/usage-export`, `/usage-prices` |
 | [Message timestamps](plugins/message-timestamps/README.md) | Local date/time labels on questions and completed final answers | Automatic |
-
-The **[tool stopwatch](https://github.com/alexblom102/opencode-tool-stopwatch)**
-is available separately and works alongside these plugins.
 
 ## Install on another PC
 
@@ -30,13 +29,14 @@ into OpenCode's configuration directory, then adds their relative entries to
 comments are preserved. An edited configuration gets an exact backup.
 
 The message-timestamp plugin needs the OpenCode SDK; its installer runs npm in
-that plugin's own directory to install the pinned dependency. The two TUI
+that plugin's own directory to install the pinned dependency. The three TUI
 plugins use UI modules supplied by OpenCode and need no npm runtime packages.
 
 ### Install only selected plugins
 
 ```sh
 node install.mjs cache-countdown session-usage
+node install.mjs tool-stopwatch
 node install.mjs message-timestamps
 ```
 
@@ -66,6 +66,13 @@ node install.mjs
 Then restart OpenCode (and its server for message timestamps). Reinstalling
 updates the plugin files without adding duplicate registrations. If you installed
 only a subset, pass the same plugin names when updating.
+
+### Already using the standalone stopwatch?
+
+Run this collection's installer. It uses the same `tool-stopwatch` installation
+directory and preserves an existing registration, custom options and saved panel
+visibility. The old standalone repository now points here; future updates are
+published in this all-in-one collection.
 
 ### Without Git
 

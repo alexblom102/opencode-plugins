@@ -3,6 +3,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import { test } from "node:test"
+import { pathToFileURL } from "node:url"
 import { configPaths, installCollection } from "../install.mjs"
 
 async function temporary(t) {
@@ -15,8 +16,8 @@ test("the full installer separates TUI/server entries and isolates the SDK depen
   const configDir = await temporary(t)
   const dependencies = []
   const result = await installCollection({ configDir, dependencyInstaller: async (directory) => dependencies.push(directory) })
-  assert.equal(result.plugins.length, 3)
-  assert.deepEqual(JSON.parse(await readFile(path.join(configDir, "tui.json"), "utf8")).plugin, ["./cache-countdown/tui.js", "./session-usage/tui.js"])
+  assert.equal(result.plugins.length, 4)
+  assert.deepEqual(JSON.parse(await readFile(path.join(configDir, "tui.json"), "utf8")).plugin, ["./cache-countdown/tui.js", "./session-usage/tui.js", "./tool-stopwatch/tui.js"])
   const server = JSON.parse(await readFile(path.join(configDir, "opencode.json"), "utf8"))
   assert.equal(server.$schema, "https://opencode.ai/config.json")
   assert.deepEqual(server.plugin, ["./message-timestamps/server.js"])
@@ -64,4 +65,31 @@ test("explicit config files win and duplicate JSON/JSONC choices require selecti
   await assert.rejects(configPaths({ configDir, scopes: ["tui"] }), /Both tui.json/)
   const chosen = path.join(configDir, "tui.jsonc")
   assert.equal((await configPaths({ configDir, tuiConfig: chosen, scopes: ["tui"] })).tui, chosen)
+})
+
+test("an existing standalone stopwatch registration and options are preserved", async (t) => {
+  const configDir = await temporary(t)
+  const file = path.join(configDir, "tui.json")
+  const original = JSON.stringify({ plugin: [["./tool-stopwatch/tui.js", { refreshMs: 500, showInputs: false }]] }, null, 2)
+  await writeFile(file, original)
+  const result = await installCollection({ configDir, names: ["tool-stopwatch"], dependencyInstaller: () => { throw new Error("unexpected npm") } })
+  assert.equal(result.backups.length, 0)
+  assert.equal(await readFile(file, "utf8"), original)
+  const runtime = await readFile(path.join(configDir, "tool-stopwatch", "tui.js"), "utf8")
+  assert.ok(runtime.includes('id: "local:tool-stopwatch"'))
+  assert.ok(runtime.includes('"local:tool-stopwatch:visible"'))
+  assert.equal(JSON.parse(await readFile(path.join(configDir, "tool-stopwatch", "package.json"), "utf8")).name, "opencode-tool-stopwatch")
+})
+
+test("upgrading the collection keeps an absolute standalone entry without duplicating it", async (t) => {
+  const configDir = await temporary(t)
+  const file = path.join(configDir, "tui.json")
+  const existing = [pathToFileURL(path.join(configDir, "tool-stopwatch", "tui.js")).href, { keepCompletedSeconds: 10 }]
+  await writeFile(file, JSON.stringify({ plugin: ["./cache-countdown/tui.js", "./session-usage/tui.js", existing] }))
+  await installCollection({ configDir, dependencyInstaller: async () => {} })
+  const contents = JSON.parse(await readFile(file, "utf8"))
+  assert.equal(contents.plugin.length, 3)
+  assert.deepEqual(contents.plugin[2], existing)
+  await installCollection({ configDir, dependencyInstaller: async () => {} })
+  assert.deepEqual(JSON.parse(await readFile(file, "utf8")), contents)
 })
